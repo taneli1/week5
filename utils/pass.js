@@ -5,22 +5,23 @@ const userModel = require('../models/userModel');
 const passportJWT = require('passport-jwt');
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
-const bcrypt = require('bcryptjs')
-
+const bcrypt = require('bcryptjs');
 
 // local strategy for username password login
 passport.use(new LocalStrategy(
     async (username, password, done) => {
-      const params = [username];
 
+      const params = [username];
       try {
         const [user] = await userModel.getUserLogin(params);
         console.log('Local strategy', user); // result is binary row
         if (user === undefined) {
           return done(null, false, {message: 'Incorrect email.'});
         }
-        if (!bcrypt.compareSync(password,user.password)) {
-          return done(null, false, {message: 'Incorrect password.'});
+        // TODO: use bcrypt to check if passwords don't match
+        if (!bcrypt.compareSync(password, user.password)) { // passwords dont match
+          console.log('here');
+          return done(null, false);
         }
         return done(null, {...user}, {message: 'Logged In Successfully'}); // use spread syntax to create shallow copy to get rid of binary row type
       }
@@ -29,18 +30,25 @@ passport.use(new LocalStrategy(
       }
     }));
 
+
 passport.use(new JWTStrategy({
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
       secretOrKey: 'testing',
     },
-    (jwtPayload, done) => {
-      console.log(`pass.js: .use jwt ${jwtPayload.user_id}`);
-
-      return userModel.getUser(jwtPayload.user_id).then(user => {
-        return done(null, user);
-      }).catch(err => {
+    async (jwtPayload, done) => {
+      //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.
+      try {
+        console.log('jwtPayload', jwtPayload)
+        const user = await userModel.getUser(jwtPayload.user_id);
+        if (user === undefined) {
+          return done(null, false);
+        }
+        const plainUser = {...user};
+        return done(null, plainUser);
+      }
+      catch (err) {
         return done(err);
-      });
+      }
     },
 ));
 

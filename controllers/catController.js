@@ -3,12 +3,21 @@
 const catModel = require('../models/catModel');
 const { validationResult} = require('express-validator');
 const { makeThumbNail} = require('../utils/resize.js')
-const cats = catModel.cats;
 
 const cat_list_get = async (req, res) => {
   const cats = await catModel.getAllCats();
   res.json(cats);
 };
+
+
+const make_thumbnail = async (req, res, next) => {
+  const ready = await makeThumbNail(req.file.path, req.file.filename);
+  if (ready) {
+    console.log('Is ready');
+    next();
+  }
+};
+
 
 const cat_get_by_id = async (req, res) => {
   console.log('catController: http get cat with path param', req.params);
@@ -47,5 +56,6 @@ module.exports = {
   cat_get_by_id,
   cat_create,
   cat_update,
-  cat_delete
+  cat_delete,
+  make_thumbnail
 };
