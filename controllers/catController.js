@@ -1,8 +1,8 @@
 'use strict';
 // catController
 const catModel = require('../models/catModel');
+const {makeThumbnail} = require('../utils/resize');
 const { validationResult} = require('express-validator');
-const { makeThumbNail} = require('../utils/resize.js')
 
 const cat_list_get = async (req, res) => {
   const cats = await catModel.getAllCats();
@@ -10,13 +10,20 @@ const cat_list_get = async (req, res) => {
 };
 
 
+
 const make_thumbnail = async (req, res, next) => {
-  const ready = await makeThumbNail(req.file.path, req.file.filename);
-  if (ready) {
-    console.log('Is ready');
+  try {
+    const ready = await makeThumbnail({width: 160, height: 160}, req.file.path,
+        './thumbnails/' + req.file.filename);
+    if (ready) {
+      console.log('make_thumbnail', ready);
+      next();
+    }
+  } catch (e) {
     next();
   }
 };
+
 
 
 const cat_get_by_id = async (req, res) => {
@@ -34,7 +41,7 @@ const cat_create = async (req, res) => {
     return res.status(400).json({errors: errors.array()});
   }
 
-  makeThumbNail()
+  makeThumbnail()
 
   const id = await catModel.insertCat(req);
   const cat = await catModel.getCat(id);

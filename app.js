@@ -15,8 +15,11 @@ const port = 3000;
 
 app.use('/thumbnails', express.static('thumbnails'));
 app.use(cors());
+app.use(express.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('uploads'));
+
+
 
 // routes
 app.use('/', rootRoute);
