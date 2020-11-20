@@ -1,6 +1,7 @@
 'use strict';
 // catController
 const catModel = require('../models/catModel');
+const {getCoordinates} = require('../utils/imageMeta');
 const {makeThumbnail} = require('../utils/resize');
 const { validationResult} = require('express-validator');
 
@@ -33,20 +34,24 @@ const cat_get_by_id = async (req, res) => {
 }
 
 const cat_create = async (req, res) => {
-  //here we will create a cat with data comming from req...
-  console.log('catController cat_create', req.body, req.file);
 
+  console.log('catController cat_create', req.body, req.file);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('validation', errors.array());
     return res.status(400).json({errors: errors.array()});
   }
 
-  makeThumbnail()
+  // get gps coordinates from image
+  const coords = await getCoordinates(req.file.path);
+  console.log('coords', coords);
+  req.body.coords = coords;
 
   const id = await catModel.insertCat(req);
   const cat = await catModel.getCat(id);
   res.send(cat);
-}
+};
+
 
 const cat_update = async (req, res) => {
   const updateOk = await catModel.updateCat(req);
