@@ -2,7 +2,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
 const passport = require('./utils/pass');
 
 const rootRoute = require('./routes/rootRoute');
@@ -17,9 +16,10 @@ app.use('/thumbnails', express.static('thumbnails'));
 app.use(cors());
 app.use(express.json());
 app.use(express.static('uploads'));
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-
+console.log(process.env.NODE_ENV)
 if (process.env.NODE_ENV === 'production') {
   require('./production')(app, process.env.PORT);
 } else {
