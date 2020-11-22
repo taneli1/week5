@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = (app, port) => {
-  app.enable('trust proxy');
 
+  app.enable('trust proxy');
   app.use ((req, res, next) => {
     if (req.secure) {
       next();
@@ -12,5 +12,5 @@ module.exports = (app, port) => {
     }
   });
 
-  app.listen(port, () => console.log(`app listen on port ${port}`));
+  app.listen(port, () => console.log(`App listen on port ${port}`));
 };
